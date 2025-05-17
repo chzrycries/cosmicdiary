@@ -13,7 +13,7 @@ import { Video } from 'expo-av';
 const { width, height } = Dimensions.get('window');
 const MOOD_EMOJIS = ['😀','😊','😐','😢','😡','🥰','😴','🤩','😎','🤔','😱','🥳'];
 
-// --- THEMES ---
+// theme
 const themes = {
   light: {
     container: { flex: 1, backgroundColor: '#f7f7fa' },
@@ -68,7 +68,7 @@ const themes = {
   },
 };
 
-// --- CosmicButton: theme-aware, gradient/glow for cosmic ---
+// buttons
 const CosmicButton = ({ title, onPress, theme = "cosmic", style = {}, icon = null }) => {
   let buttonStyle = {};
   let textColor = "#fffbe6";
@@ -140,7 +140,7 @@ const CosmicButton = ({ title, onPress, theme = "cosmic", style = {}, icon = nul
   );
 };
 
-// --- STARFIELD (Animated for Cosmic) ---
+// ani
 const StarField = ({ count = 60, cosmic = false }) => {
   const stars = Array.from({ length: count }).map((_, i) => ({
     x: Math.random() * width,
@@ -173,7 +173,7 @@ const StarField = ({ count = 60, cosmic = false }) => {
   );
 };
 
-// --- INTRO ---
+// front
 function IntroScreen({ onContinue, theme }) {
   return (
     <View style={{
