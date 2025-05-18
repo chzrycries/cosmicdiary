@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import {
   View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity,
   Dimensions, Image, Alert, SafeAreaView, Modal,
@@ -12,35 +12,114 @@ import { Video } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 const MOOD_EMOJIS = ['😀','😊','😐','😢','😡','🥰','😴','🤩','😎','🤔','😱','🥳'];
-
-// theme
+function randomBetween(a, b) {
+  return a + Math.random() * (b - a);
+}
+function parseLinearGradient(str) {
+  // Example: 'linear-gradient(90deg,#a685e2,#f6e58d)'
+  const match = str.match(/linear-gradient\(.*?,(.*)\)/);
+  if (match) {
+    return match[1].split(',').map(s => s.trim());
+  }
+  return ['#a685e2', '#f6e58d'];
+}
+function createStar(i, cosmic) {
+  return {
+    id: i + '-' + Math.random(),
+    x: randomBetween(0, width),
+    y: randomBetween(0, height),
+    size: randomBetween(1, cosmic ? 4 : 2),
+    baseGlow: randomBetween(cosmic ? 0.5 : 0.3, cosmic ? 1 : 0.8),
+    driftX: randomBetween(-0.05, 0.05),
+    driftY: randomBetween(0.01, 0.08),
+    twinkleSpeed: randomBetween(1.2, 2.5),
+    twinklePhase: randomBetween(0, Math.PI * 2),
+    glow: 1,
+  };
+}
 const themes = {
-  light: {
-    container: { flex: 1, backgroundColor: '#f7f7fa' },
-    text: { color: '#232946' },
-    input: { backgroundColor: '#fff', color: '#232946', borderRadius: 8, padding: 10, fontSize: 16 },
-    entryCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginVertical: 8, shadowColor: '#a685e2', shadowOpacity: 0.10, shadowOffset: { width: 0, height: 2 }, shadowRadius: 8, elevation: 2 },
-    icon: { color: '#232946' },
-    menuBg: { backgroundColor: '#fff' },
-    button: { background: '#f6e58d', text: '#232946', shadow: '#a685e2' },
-    buttonAlt: { background: '#a685e2', text: '#fff', shadow: '#f6e58d' },
-    modalBg: '#fff',
-    modalText: '#232946',
-    border: '#e0e0e0',
-    link: { color: '#3a86ff' },
-    gradient: ['#fffbe6', '#e9ecef'],
-    fab: '#f6e58d',
-    fabIcon: '#232946'
+ light: {
+  container: { flex: 1, backgroundColor: '#fff' },
+  text: { color: '#232946' },
+  input: {
+    backgroundColor: '#fff', 
+    color: '#232946',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  entryCard: {
+    backgroundColor: '#fff', 
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 8,
+    shadowColor: '#a685e2',
+    shadowOpacity: 0.14,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#ececec',
+  },
+  icon: { color: '#232946' },
+  menuBg: { backgroundColor: '#fff' }, 
+  button: {
+    background: '#f6e58d',
+    text: '#232946',
+    shadow: '#a685e2'
+  },
+  buttonAlt: {
+    background: '#a685e2',
+    text: '#fff',
+    shadow: '#f6e58d'
+  },
+  modalBg: '#fff', 
+  modalText: '#232946',
+  border: '#e0e0e0',
+  link: { color: '#3a86ff' },
+  gradient: ['#fff', '#fff'], 
+  fab: '#f6e58d',
+  fabIcon: '#232946'
   },
   dark: {
     container: { flex: 1, backgroundColor: '#181826' },
     text: { color: '#e0e0e0' },
-    input: { backgroundColor: '#232946', color: '#e0e0e0', borderRadius: 8, padding: 10, fontSize: 16 },
-    entryCard: { backgroundColor: '#232946', borderRadius: 16, padding: 16, marginVertical: 8, shadowColor: '#a685e2', shadowOpacity: 0.16, shadowOffset: { width: 0, height: 2 }, shadowRadius: 8, elevation: 4 },
+    input: {
+      backgroundColor: '#232946',
+      color: '#e0e0e0',
+      borderRadius: 8,
+      padding: 10,
+      fontSize: 16,
+      borderWidth: 1,
+      borderColor: '#393a5a',
+    },
+    entryCard: {
+      backgroundColor: '#232946',
+      borderRadius: 16,
+      padding: 16,
+      marginVertical: 8,
+      shadowColor: '#a685e2',
+      shadowOpacity: 0.18,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 8,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: '#393a5a',
+    },
     icon: { color: '#f6e58d' },
     menuBg: { backgroundColor: '#232946' },
-    button: { background: '#232946', text: '#f6e58d', shadow: '#a685e2' },
-    buttonAlt: { background: '#f6e58d', text: '#232946', shadow: '#393a5a' },
+    button: {
+      background: '#232946',
+      text: '#f6e58d',
+      shadow: '#a685e2'
+    },
+    buttonAlt: {
+      background: '#f6e58d',
+      text: '#232946',
+      shadow: '#393a5a'
+    },
     modalBg: '#232946',
     modalText: '#fffbe6',
     border: '#393a5a',
@@ -49,6 +128,52 @@ const themes = {
     fab: '#232946',
     fabIcon: '#f6e58d'
   },
+  cosmic: {
+    container: { flex: 1, backgroundColor: '#0b0033' },
+    text: { color: '#dcd6f7' },
+    input: {
+      backgroundColor: '#1a124d',
+      color: '#fffbe6',
+      borderRadius: 8,
+      padding: 10,
+      fontSize: 16,
+      borderWidth: 1,
+      borderColor: '#a685e2',
+    },
+    entryCard: {
+      backgroundColor: 'rgba(35,41,70,0.97)',
+      borderRadius: 16,
+      padding: 16,
+      marginVertical: 8,
+      shadowColor: '#a685e2',
+      shadowOpacity: 0.18,
+      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: 12,
+      elevation: 6,
+      borderWidth: 1,
+      borderColor: '#a685e2',
+    },
+    icon: { color: '#f6e58d' },
+    menuBg: { backgroundColor: 'rgba(35,41,70,0.92)' },
+    button: {
+      background: 'linear-gradient(90deg,#a685e2,#f6e58d)',
+      text: '#232946',
+      shadow: '#fffbe6'
+    },
+    buttonAlt: {
+      background: '#232946',
+      text: '#f6e58d',
+      shadow: '#a685e2'
+    },
+    modalBg: 'rgba(20,10,60,0.97)',
+    modalText: '#fffbe6',
+    border: '#a685e2',
+    link: { color: '#a685e2' },
+    gradient: ['#181826', '#a685e2', '#f6e58d'],
+    fab: '#a685e2',
+    fabIcon: '#fffbe6'
+  },
+
   cosmic: {
     container: { flex: 1, backgroundColor: '#0b0033' },
     text: { color: '#dcd6f7' },
@@ -68,90 +193,142 @@ const themes = {
   },
 };
 
-// buttons
-const CosmicButton = ({ title, onPress, theme = "cosmic", style = {}, icon = null }) => {
-  let buttonStyle = {};
-  let textColor = "#fffbe6";
-  if (theme === "cosmic") {
-    buttonStyle = {
-      backgroundColor: '#a685e2',
-      borderWidth: 2,
-      borderColor: '#fffbe6',
-      shadowColor: '#fffbe6',
-      shadowOpacity: 0.4,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 12,
-      elevation: 8,
-    };
-    textColor = "#232946";
-  } else if (theme === "dark") {
-    buttonStyle = {
-      backgroundColor: '#232946',
-      borderWidth: 2,
-      borderColor: '#f6e58d',
-      shadowColor: '#a685e2',
-      shadowOpacity: 0.18,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 8,
-      elevation: 5,
-    };
-    textColor = "#f6e58d";
-  } else {
-    buttonStyle = {
-      backgroundColor: '#f6e58d',
-      borderWidth: 2,
-      borderColor: '#a685e2',
-      shadowColor: '#a685e2',
-      shadowOpacity: 0.09,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 8,
-      elevation: 3,
-    };
-    textColor = "#232946";
+// --- BUTTON ---
+const BUTTON_HEIGHT = 54;
+
+const CosmicButton = ({
+  title,
+  onPress,
+  theme = "cosmic",
+  style = {},
+  icon = null,
+  solid = false, 
+}) => {
+  const btnTheme = themes[theme]?.button || themes.cosmic.button;
+  const isCosmic = theme === "cosmic";
+  let gradientColors = [];
+  if (isCosmic && btnTheme.background.startsWith('linear-gradient')) {
+    gradientColors = parseLinearGradient(btnTheme.background);
   }
+
+  const [btnWidth, setBtnWidth] = useState(200);
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[
         {
           borderRadius: 16,
-          paddingVertical: 14,
-          paddingHorizontal: 32,
           alignItems: 'center',
           justifyContent: 'center',
-          marginVertical: 8,
-          flexDirection: 'row',
+          marginVertical: 10,
+          overflow: 'hidden',
+          elevation: 8,
+          shadowColor: btnTheme.shadow,
+          shadowOpacity: 0.4,
+          shadowOffset: { width: 0, height: 2 },
+          shadowRadius: 12,
+          minWidth: 180,
+          height: BUTTON_HEIGHT,
         },
-        buttonStyle,
         style,
       ]}
       activeOpacity={0.85}
+      onLayout={e => setBtnWidth(e.nativeEvent.layout.width)}
     >
-      {icon && <Text style={{ fontSize: 22, marginRight: 8 }}>{icon}</Text>}
-      <Text style={{
-        color: textColor,
-        fontWeight: 'bold',
-        fontSize: 18,
-        letterSpacing: 0.5,
-        textShadowColor: theme === "cosmic" ? "#fffbe6" : undefined,
-        textShadowRadius: theme === "cosmic" ? 6 : 0,
-      }}>{title}</Text>
+      {(isCosmic && !solid) ? (
+        <Svg
+          width={btnWidth}
+          height={BUTTON_HEIGHT}
+          style={StyleSheet.absoluteFill}
+        >
+          <Defs>
+            <LinearGradient id="cosmicBtnGradient" x1="0" y1="0" x2="1" y2="0">
+              <Stop offset="0%" stopColor={gradientColors[0] || "#a685e2"} />
+              <Stop offset="100%" stopColor={gradientColors[1] || "#f6e58d"} />
+            </LinearGradient>
+          </Defs>
+          <Rect
+            x="0"
+            y="0"
+            width={btnWidth}
+            height={BUTTON_HEIGHT}
+            rx="16"
+            fill="url(#cosmicBtnGradient)"
+          />
+        </Svg>
+      ) : (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: isCosmic
+              ? (themes.cosmic.buttonAlt?.background || "#a685e2")
+              : btnTheme.background,
+            borderRadius: 16,
+          }}
+          pointerEvents="none"
+        />
+      )}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: BUTTON_HEIGHT,
+        justifyContent: 'center',
+        paddingHorizontal: 28,
+      }}>
+        {icon && <Text style={{ fontSize: 24, marginRight: 10 }}>{icon}</Text>}
+        <Text style={{
+          color: btnTheme.text,
+          fontWeight: 'bold',
+          fontSize: 18,
+          letterSpacing: 0.5,
+          textShadowColor: (isCosmic && !solid) ? "#fffbe6" : undefined,
+          textShadowRadius: (isCosmic && !solid) ? 6 : 0,
+        }}>
+          {title}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
 
-// ani
+// background stars
 const StarField = ({ count = 60, cosmic = false }) => {
-  const stars = Array.from({ length: count }).map((_, i) => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    size: Math.random() * (cosmic ? 3 : 2) + 1,
-    glow: cosmic ? Math.random() * 0.7 + 0.3 : 0.3 + 0.5 * Math.random(),
-    id: i + '-' + Math.random(),
-  }));
+  const starsRef = useRef(
+    Array.from({ length: count }).map((_, i) => createStar(i, cosmic))
+  );
+  const [, setFrame] = useState(0);
+
+  useEffect(() => {
+    let running = true;
+    function animate() {
+      const now = Date.now() / 1000;
+      starsRef.current.forEach(star => {
+        star.glow =
+          star.baseGlow *
+          (0.7 +
+            0.3 *
+              Math.sin(
+                now * star.twinkleSpeed + star.twinklePhase
+              ));
+        star.x += star.driftX;
+        star.y += star.driftY;
+        if (star.x < 0) star.x = width;
+        if (star.x > width) star.x = 0;
+        if (star.y > height) star.y = 0;
+      });
+      setFrame(f => f + 1);
+      if (running) requestAnimationFrame(animate);
+    }
+    animate();
+    return () => {
+      running = false;
+    };
+  }, []);
+
   return (
-    <View style={StyleSheet.absoluteFill}>
-      {stars.map(star => (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {starsRef.current.map(star => (
         <View
           key={star.id}
           style={{
@@ -173,7 +350,7 @@ const StarField = ({ count = 60, cosmic = false }) => {
   );
 };
 
-// front
+// -- INTRO --
 function IntroScreen({ onContinue, theme }) {
   return (
     <View style={{
@@ -213,17 +390,52 @@ function IntroScreen({ onContinue, theme }) {
         </Svg>
       )}
       {theme === "light" && (
-        <Svg height={170} width={width} style={{ position: 'absolute', top: 40, left: 0 }}>
-          <Defs>
-            <RadialGradient id="lightglow" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor="#f6e58d" stopOpacity="0.7" />
-              <Stop offset="100%" stopColor="#fffbe6" stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Circle cx={width * 0.7} cy={60} r={50} fill="#f6e58d" />
-          <Circle cx={width * 0.7} cy={60} r={80} fill="url(#lightglow)" />
-        </Svg>
-      )}
+  <Svg height={170} width={width} style={{ position: 'absolute', top: 40, left: 0 }}>
+    <Defs>
+      <RadialGradient id="whiteSunGlow" cx="50%" cy="50%" r="50%">
+        <Stop offset="0%" stopColor="#fff" stopOpacity="0.95" />
+        <Stop offset="70%" stopColor="#f6e58d" stopOpacity="0.12" />
+        <Stop offset="100%" stopColor="#fff" stopOpacity="0" />
+      </RadialGradient>
+    </Defs>
+    <Circle
+      cx={width * 0.7}
+      cy={60}
+      r={48}
+      fill="#fff"
+      stroke="#f6e58d"
+      strokeWidth={3}
+      opacity={0.98}
+    />
+    <Circle
+      cx={width * 0.7}
+      cy={60}
+      r={80}
+      fill="url(#whiteSunGlow)"
+      opacity={0.95}
+    />
+    {Array.from({ length: 12 }).map((_, i) => {
+      const angle = (i * Math.PI * 2) / 12;
+      const x1 = width * 0.7 + Math.cos(angle) * 58;
+      const y1 = 60 + Math.sin(angle) * 58;
+      const x2 = width * 0.7 + Math.cos(angle) * 70;
+      const y2 = 60 + Math.sin(angle) * 70;
+      return (
+        <Rect
+          key={i}
+          x={x1 - 2}
+          y={y1 - 8}
+          width={4}
+          height={16}
+          rx={2}
+          fill="#f6e58d"
+          opacity={0.8}
+          transform={`rotate(${(angle * 180) / Math.PI} ${x1} ${y1})`}
+        />
+      );
+    })}
+  </Svg>
+)}
       <Text style={{
         fontSize: 36,
         fontWeight: 'bold',
@@ -257,7 +469,7 @@ function IntroScreen({ onContinue, theme }) {
   );
 }
 
-// --- Media Modal (for image/video/audio) ---
+// --- MEDIA MODAL ---
 function MediaModal({ visible, uri, type, onClose }) {
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -332,13 +544,44 @@ function AudioPlayer({ uri, big }) {
 }
 
 // --- MOON SVG ---
-function MoonPhaseSVG({ phase = 0, size = 28 }) {
+function MoonPhaseSVG({ phase = 0, size = 28, theme = "light" }) {
+  const themeMoon = {
+    light: {
+      moon: "#fffbe6",
+      highlight: "#f6e58d",
+      outline: "#e1c340",
+      glow: "#f6e58d",
+    },
+    dark: {
+      moon: "#f6e58d",
+      highlight: "#fffbe6",
+      outline: "#e1c340",
+      glow: "#a685e2",
+    },
+    cosmic: {
+      moon: "#fffbe6",
+      highlight: "#f6e58d",
+      outline: "#a685e2",
+      glow: "#a685e2",
+    },
+  }[theme] || {
+    moon: "#fffbe6",
+    highlight: "#f6e58d",
+    outline: "#e1c340",
+    glow: "#f6e58d",
+  };
+
   const radius = size / 2;
   const offsets = [1, 0.6, 0.2, -0.2, -1, -0.6, -0.2, 0.2];
   const shadowOffset = offsets[phase % 8] * radius;
+
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <Defs>
+        <RadialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+          <Stop offset="0%" stopColor={themeMoon.glow} stopOpacity="0.38" />
+          <Stop offset="80%" stopColor={themeMoon.glow} stopOpacity="0.0" />
+        </RadialGradient>
         <Mask id="moonMask">
           <Rect width={size} height={size} fill="white" />
           <Circle
@@ -349,21 +592,30 @@ function MoonPhaseSVG({ phase = 0, size = 28 }) {
           />
         </Mask>
       </Defs>
-      <Circle cx={radius} cy={radius} r={radius} fill="#fffbe6" />
       <Circle
         cx={radius}
         cy={radius}
         r={radius}
-        fill="#f6e58d"
+        fill="url(#moonGlow)"
+        opacity={0.7}
+      />
+      <Circle cx={radius} cy={radius} r={radius} fill={themeMoon.moon} />
+      <Circle
+        cx={radius}
+        cy={radius}
+        r={radius}
+        fill={themeMoon.highlight}
         mask="url(#moonMask)"
+        opacity={0.97}
       />
       <Circle
         cx={radius}
         cy={radius}
-        r={radius - 2}
+        r={radius - 1.2}
         fill="none"
-        stroke="#e1c340"
+        stroke={themeMoon.outline}
         strokeWidth={2}
+        opacity={0.7}
       />
     </Svg>
   );
@@ -393,8 +645,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const days = getMonthDays(currentYear, currentMonth);
-
-  // Mark days with entries
   const entryDates = new Set(entries.map(e => (new Date(e.date)).toDateString()));
 
   return (
@@ -663,7 +913,7 @@ function EntryModal({
                 title="Cancel"
                 onPress={onClose}
                 theme="dark"
-                icon="✖️"
+                icon="❌"
                 style={{ flex: 1, marginRight: 8, minWidth: 90, paddingVertical: 10 }}
               />
               <CosmicButton
