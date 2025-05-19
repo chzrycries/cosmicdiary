@@ -84,50 +84,50 @@ const themes = {
   },
 
   dark: {
-    container: { flex: 1, backgroundColor: '#181826' },
-    text: { color: '#e3e3e3' },
-    input: {
-      backgroundColor: '#232946',
-      color: '#e3e3e3',
-      borderRadius: 8,
-      padding: 10,
-      fontSize: 16,
-      borderWidth: 1,
-      borderColor: '#45466a',
-    },
-    entryCard: {
-      backgroundColor: '#232946',
-      borderRadius: 16,
-      padding: 16,
-      marginVertical: 8,
-      shadowColor: '#a685e2',
-      shadowOpacity: 0.14,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 8,
-      elevation: 3,
-      borderWidth: 1,
-      borderColor: '#45466a',
-    },
-    icon: { color: '#f9e79f' }, 
-    menuBg: { backgroundColor: '#232946' },
-    button: {
-      background: '#2e2f5e', 
-      text: '#f9e79f',
-      shadow: '#a685e2',
-    },
-    buttonAlt: {
-      background: '#f9e79f', 
-      text: '#232946',
-      shadow: '#45466a',
-    },
-    modalBg: '#232946',
-    modalText: '#fffbe6',
-    border: '#45466a',
-    link: { color: '#4ac6f0' }, 
-    gradient: ['#232946', '#45466a'],
-    fab: '#2e2f5e',
-    fabIcon: '#f9e79f',
+  container: { flex: 1, backgroundColor: '#11111a' }, 
+  text: { color: '#e3e3e3' },
+  input: {
+    backgroundColor: '#181826',
+    color: '#e3e3e3',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#232946',
   },
+  entryCard: {
+    backgroundColor: '#181826',
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#232946',
+  },
+  icon: { color: '#f9e79f' }, 
+  menuBg: { backgroundColor: '#181826' },
+  button: {
+    background: '#232946',
+    text: '#f9e79f',       
+    shadow: '#232946',
+  },
+  buttonAlt: {
+    background: '#f9e79f', 
+    text: '#181826',       
+    shadow: '#232946',
+  },
+  modalBg: '#11111a',      
+  modalText: '#fffbe6',    
+  border: '#232946',      
+  link: { color: '#4ac6f0' }, 
+  gradient: ['#181826', '#232946'], 
+  fab: '#232946',        
+  fabIcon: '#f9e79f',      
+},
 
   cosmic: {
     container: { flex: 1, backgroundColor: '#0b0033' }, 
@@ -828,41 +828,84 @@ function SettingsModal({ visible, onClose, theme, setTheme }) {
 }
 
 // --- ALL ENTRIES MODAL ---
-function AllEntriesModal({ visible, onClose, entries, themeStyle, onSelectEntry }) {
+function AllEntriesModal({ visible, onClose, entries, themeStyle, onSelectEntry, theme = "cosmic" }) {
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.settingsModalOverlay}>
-        <View style={[styles.settingsModalCard, { maxHeight: height * 0.8 }]}>
+      <View style={[
+        styles.overlay,
+        {
+          backgroundColor: themeStyle.modalBg || 'rgba(0,0,0,0.92)',
+        }
+      ]}>
+        <View style={[
+          styles.card,
+          {
+            backgroundColor: themeStyle.menuBg.backgroundColor,
+            borderColor: themeStyle.border,
+            maxHeight: height * 0.8,
+            shadowColor: themeStyle.icon.color,
+          }
+        ]}>
           <Text style={{
             color: themeStyle.text.color,
             fontSize: 22,
             fontWeight: 'bold',
             marginBottom: 16,
-            alignSelf: 'center'
-          }}>All Diary Entries</Text>
-          <ScrollView>
+            alignSelf: 'center',
+            letterSpacing: 1.2
+          }}>
+            All Diary Entries
+          </Text>
+          <ScrollView style={{ flexGrow: 0 }}>
             {entries.length === 0 && (
-              <Text style={[themeStyle.text, { textAlign: 'center', marginTop: 40, fontSize: 18, opacity: 0.7 }]}>
+              <Text style={[
+                themeStyle.text,
+                {
+                  textAlign: 'center',
+                  marginTop: 40,
+                  fontSize: 18,
+                  opacity: 0.7
+                }
+              ]}>
                 No entries yet.
               </Text>
             )}
             {entries.slice().reverse().map(entry => (
               <TouchableOpacity
                 key={entry.id}
-                style={[themeStyle.entryCard, { marginBottom: 10 }]}
+                style={[
+                  themeStyle.entryCard,
+                  styles.entryCard,
+                  { marginBottom: 10, borderColor: themeStyle.border }
+                ]}
                 onPress={() => {
                   onSelectEntry(entry);
                   onClose();
                 }}
+                activeOpacity={0.85}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <Text style={{ fontSize: 22, marginRight: 8 }}>{entry.mood || '📝'}</Text>
-                  <Text style={[themeStyle.text, { fontSize: 18, fontWeight: 'bold' }]}>{entry.title || 'Untitled'}</Text>
+                  <Text style={{
+                    fontSize: 22,
+                    marginRight: 8,
+                    color: themeStyle.icon.color
+                  }}>
+                    {entry.mood || '📝'}
+                  </Text>
+                  <Text style={[
+                    themeStyle.text,
+                    { fontSize: 18, fontWeight: 'bold', flexShrink: 1 }
+                  ]}>
+                    {entry.title || 'Untitled'}
+                  </Text>
                 </View>
                 <Text style={[themeStyle.text, { opacity: 0.7 }]} numberOfLines={2}>
                   {entry.text}
                 </Text>
-                <Text style={[themeStyle.text, { fontSize: 12, marginTop: 8, opacity: 0.5 }]}>
+                <Text style={[
+                  themeStyle.text,
+                  { fontSize: 12, marginTop: 8, opacity: 0.5 }
+                ]}>
                   {new Date(entry.date).toLocaleString()}
                 </Text>
               </TouchableOpacity>
@@ -871,16 +914,18 @@ function AllEntriesModal({ visible, onClose, entries, themeStyle, onSelectEntry 
           <CosmicButton
             title="Close"
             onPress={onClose}
-            theme="cosmic"
-            icon="✖️"
-            style={{ alignSelf: "center", minWidth: 120 }}
+            theme={theme}
+            style={{
+              alignSelf: "center",
+              minWidth: 120,
+              marginTop: 18,
+            }}
           />
         </View>
       </View>
     </Modal>
   );
 }
-
 // --- MOOD PICKER ---
 function MoodPicker({ mood, setMood }) {
   return (
@@ -993,14 +1038,12 @@ function EntryModal({
                 title="Cancel"
                 onPress={onClose}
                 theme="dark"
-                icon="❌"
                 style={{ flex: 1, marginRight: 8, minWidth: 90, paddingVertical: 10 }}
               />
               <CosmicButton
                 title="Save"
                 onPress={handleSave}
                 theme="cosmic"
-                icon="💾"
                 style={{ flex: 1, marginLeft: 8, minWidth: 90, paddingVertical: 10 }}
               />
             </View>
@@ -1071,7 +1114,7 @@ function EntryModal({
             </ScrollView>
             <View style={styles.fabRow}>
               <TouchableOpacity style={styles.fab} onPress={pickPhoto}>
-                <Text style={styles.fabIcon}>🖼️</Text>
+                <Text style={styles.fabIcon}>🖼</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.fab} onPress={pickVideo}>
                 <Text style={styles.fabIcon}>🎬</Text>
@@ -1344,109 +1387,134 @@ const styles = StyleSheet.create({
     width: width * 0.92,
     minHeight: height * 0.6,
     backgroundColor: '#232946',
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: 20,          
+    padding: 24,                 
     shadowColor: '#000',
-    shadowOpacity: 0.19,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 18,
-    elevation: 10,
+    shadowOpacity: 0.22,        
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 20,
+    elevation: 12,
     marginTop: 40,
   },
   dateText: {
     color: '#fffbe6',
-    fontSize: 15,
-    marginBottom: 8,
+    fontSize: 16,                
+    marginBottom: 12,
     textAlign: 'center',
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    fontWeight: '700',           
+    letterSpacing: 1.2,
   },
   titleInput: {
     backgroundColor: '#393a5a',
     color: '#fffbe6',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    marginTop: 4,
+    borderRadius: 12,
+    paddingVertical: 12,       
+    paddingHorizontal: 14,
+    fontSize: 20,                
+    fontWeight: '700',
+    marginBottom: 12,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#4a4c7a',    
   },
   contentInput: {
     backgroundColor: '#393a5a',
     color: '#dcd6f7',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    minHeight: 80,
-    marginBottom: 8,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    fontSize: 17,
+    minHeight: 100,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#4a4c7a',
+    textAlignVertical: 'top',   
   },
   mediaPreview: {
-    width: 70,
-    height: 70,
-    marginRight: 8,
-    borderRadius: 10,
+    width: 72,
+    height: 72,
+    marginRight: 10,
+    borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
     backgroundColor: '#181826',
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   mediaImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
   removeBtn: {
     position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: '#393a5a',
-    borderRadius: 12,
-    padding: 2,
-    zIndex: 2,
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(57, 58, 90, 0.85)', 
+    borderRadius: 14,
+    padding: 4,
+    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   audioPreview: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 10,
     backgroundColor: '#393a5a',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   linkChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#232946',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginRight: 6,
-    marginBottom: 6,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
   },
   thumb: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
-    marginRight: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    marginRight: 6,
     backgroundColor: '#393a5a',
   },
   fabRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 12,
+    marginTop: 16,
   },
   fab: {
     backgroundColor: '#393a5a',
-    borderRadius: 22,
-    width: 44,
-    height: 44,
+    borderRadius: 26,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 7,
   },
   fabIcon: {
-    fontSize: 22,
+    fontSize: 24,
     color: '#f6e58d',
   },
   settingsModalOverlay: {
@@ -1517,5 +1585,25 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: '#a685e2',
     marginTop: 4,
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 18,
+  },
+  card: {
+    width: width * 0.93,
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1.5,
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  entryCard: {
+    marginHorizontal: 2,
+    marginVertical: 2,
   },
 });
