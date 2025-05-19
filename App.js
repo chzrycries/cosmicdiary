@@ -1200,9 +1200,9 @@ export default function App() {
         <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.iconBtn}>
           <Text style={{ fontSize: 26, color: themeStyle.icon.color }}>⚙️</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerText, themeStyle.text]}>Cosmic Diary</Text>
+        <Text style={[styles.headerText, themeStyle.text]}>𝐂𝐨𝐬𝐦𝐢𝐜 𝐃𝐢𝐚𝐫𝐲</Text>
         <TouchableOpacity onPress={() => setShowAllEntries(true)} style={styles.iconBtn}>
-          <Text style={{ fontSize: 26, color: themeStyle.icon.color }}>📚</Text>
+          <Text style={{ fontSize: 26, color: themeStyle.icon.color }}>☰</Text>
         </TouchableOpacity>
       </View>
       <CalendarStrip
@@ -1227,7 +1227,6 @@ export default function App() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={{ fontSize: 22, marginRight: 8 }}>{entry.mood || '📝'}</Text>
               <Text style={[themeStyle.text, { fontSize: 18, fontWeight: 'bold' }]}>{entry.title || 'Untitled'}</Text>
             </View>
             <Text style={[themeStyle.text, { opacity: 0.7 }]} numberOfLines={2}>
@@ -1383,39 +1382,52 @@ const styles = StyleSheet.create({
     textShadowColor: '#a685e2',
     textShadowRadius: 8,
   },
+   container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(35, 41, 70, 0.85)', 
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modalCard: {
     width: width * 0.92,
     minHeight: height * 0.6,
-    backgroundColor: '#232946',
-    borderRadius: 20,          
-    padding: 24,                 
-    shadowColor: '#000',
-    shadowOpacity: 0.22,        
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 20,
-    elevation: 12,
+    backgroundColor: 'rgba(35, 41, 70, 0.9)', 
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#6f42c1', 
+    shadowOpacity: 0.6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 25,
+    elevation: 15,
     marginTop: 40,
+    borderWidth: 1,
+    borderColor: '#7f6afc', 
   },
   dateText: {
     color: '#fffbe6',
-    fontSize: 16,                
+    fontSize: 16,
     marginBottom: 12,
     textAlign: 'center',
-    fontWeight: '700',           
+    fontWeight: '700',
     letterSpacing: 1.2,
   },
   titleInput: {
     backgroundColor: '#393a5a',
     color: '#fffbe6',
     borderRadius: 12,
-    paddingVertical: 12,       
+    paddingVertical: 12,
     paddingHorizontal: 14,
-    fontSize: 20,                
+    fontSize: 20,
     fontWeight: '700',
     marginBottom: 12,
     marginTop: 6,
     borderWidth: 1,
-    borderColor: '#4a4c7a',    
+    borderColor: '#4a4c7a',
   },
   contentInput: {
     backgroundColor: '#393a5a',
@@ -1428,72 +1440,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#4a4c7a',
-    textAlignVertical: 'top',   
-  },
-  mediaPreview: {
-    width: 72,
-    height: 72,
-    marginRight: 10,
-    borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#181826',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  mediaImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 14,
-  },
-  removeBtn: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(57, 58, 90, 0.85)', 
-    borderRadius: 14,
-    padding: 4,
-    zIndex: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  audioPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 10,
-    backgroundColor: '#393a5a',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  linkChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#232946',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  thumb: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    marginRight: 6,
-    backgroundColor: '#393a5a',
+    textAlignVertical: 'top',
   },
   fabRow: {
     flexDirection: 'row',
@@ -1517,6 +1464,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#f6e58d',
   },
+
   settingsModalOverlay: {
     flex:1,
     backgroundColor: 'rgba(0,0,0,0.5)',
