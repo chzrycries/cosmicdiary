@@ -16,7 +16,6 @@ function randomBetween(a, b) {
   return a + Math.random() * (b - a);
 }
 function parseLinearGradient(str) {
-  // Example: 'linear-gradient(90deg,#a685e2,#f6e58d)'
   const match = str.match(/linear-gradient\(.*?,(.*)\)/);
   if (match) {
     return match[1].split(',').map(s => s.trim());
@@ -628,57 +627,154 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+
   const days = getMonthDays(currentYear, currentMonth);
-  const entryDates = new Set(entries.map(e => (new Date(e.date)).toDateString()));
+  const entryDates = new Set(entries.map(e => new Date(e.date).toDateString()));
+
+  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // Refs to ScrollViews
+  const weekdaysScrollViewRef = useRef(null);
+  const datesScrollViewRef = useRef(null);
+
+  // Track which ScrollView is currently being scrolled by user to avoid feedback loops
+  const scrollingRef = useRef(null);
+
+  const goToPreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  // Scroll handler for weekdays ScrollView
+  const onWeekdaysScroll = (event) => {
+    if (scrollingRef.current === 'dates') return; // Ignore if dates ScrollView is scrolling
+
+    scrollingRef.current = 'weekdays';
+    const offsetX = event.nativeEvent.contentOffset.x;
+
+    if (datesScrollViewRef.current) {
+      datesScrollViewRef.current.scrollTo({ x: offsetX, animated: false });
+    }
+  };
+
+  // Scroll handler for dates ScrollView
+  const onDatesScroll = (event) => {
+    if (scrollingRef.current === 'weekdays') return; // Ignore if weekdays ScrollView is scrolling
+
+    scrollingRef.current = 'dates';
+    const offsetX = event.nativeEvent.contentOffset.x;
+
+    if (weekdaysScrollViewRef.current) {
+      weekdaysScrollViewRef.current.scrollTo({ x: offsetX, animated: false });
+    }
+  };
+
+  // Clear scrollingRef when user stops scrolling to allow next scroll event
+  const onScrollEndDrag = () => {
+    scrollingRef.current = null;
+  };
+
+  const onMomentumScrollEnd = () => {
+    scrollingRef.current = null;
+  };
 
   return (
     <View style={[styles.calendarStrip, { backgroundColor: themeStyle.menuBg.backgroundColor }]}>
+      {/* Header with month navigation */}
       <View style={styles.calendarHeaderRow}>
-        <TouchableOpacity onPress={() => {
-          if (currentMonth === 0) {
-            setCurrentMonth(11);
-            setCurrentYear(currentYear - 1);
-          } else {
-            setCurrentMonth(currentMonth - 1);
-          }
-        }}>
-          <Text style={{ fontSize: 22, color: themeStyle.icon.color }}>‹</Text>
+        <TouchableOpacity onPress={goToPreviousMonth} style={styles.navButton}>
+          <Text style={[styles.navIcon, { color: themeStyle.icon.color }]}>‹</Text>
         </TouchableOpacity>
+
         <Text style={[styles.calendarMonthText, themeStyle.text]}>
           {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
         </Text>
-        <TouchableOpacity onPress={() => {
-          if (currentMonth === 11) {
-            setCurrentMonth(0);
-            setCurrentYear(currentYear + 1);
-          } else {
-            setCurrentMonth(currentMonth + 1);
-          }
-        }}>
-          <Text style={{ fontSize: 22, color: themeStyle.icon.color }}>›</Text>
+
+        <TouchableOpacity onPress={goToNextMonth} style={styles.navButton}>
+          <Text style={[styles.navIcon, { color: themeStyle.icon.color }]}>›</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 6 }}>
-        {days.map((date, i) => {
+
+      {/* Scrollable weekday names */}
+      <ScrollView
+        ref={weekdaysScrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+        scrollEventThrottle={16}
+        onScroll={onWeekdaysScroll}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        // Disable scroll if dates ScrollView is scrolling to avoid conflict
+        scrollEnabled={scrollingRef.current !== 'dates'}
+      >
+        {days.map((date, index) => {
+          const dayOfWeek = date.getDay();
+          const weekdayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          const weekdayName = weekdays[weekdayIndex];
+
+          return (
+            <View key={`weekday-${index}`} style={styles.dayWrapper}>
+              <Text style={[styles.weekdayLabelText, { color: themeStyle.text.color }]}>
+                {weekdayName}
+              </Text>
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      {/* Scrollable dates with moon phases */}
+      <ScrollView
+        ref={datesScrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+        scrollEventThrottle={16}
+        onScroll={onDatesScroll}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        scrollEnabled={scrollingRef.current !== 'weekdays'}
+      >
+        {days.map((date, index) => {
           const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
           const hasEntry = entryDates.has(date.toDateString());
+
           return (
             <TouchableOpacity
-              key={i}
+              key={`date-${index}`}
               onPress={() => setSelectedDate(new Date(date))}
               style={[
                 styles.calendarDay,
-                isSelected && { backgroundColor: '#f6e58d' },
+                isSelected && styles.selectedDay,
               ]}
+              activeOpacity={0.7}
             >
-              <Text style={{
-                color: isSelected ? '#232946' : themeStyle.text.color,
-                fontWeight: isSelected ? 'bold' : 'normal',
-                fontSize: 15,
-              }}>
+              <MoonPhaseSVG phase={getMoonPhase(date)} size={20} />
+              <Text
+                style={[
+                  styles.dayText,
+                  {
+                    color: isSelected ? '#232946' : themeStyle.text.color,
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    marginTop: 4,
+                  },
+                ]}
+              >
                 {date.getDate()}
               </Text>
-              <MoonPhaseSVG phase={getMoonPhase(date)} size={20} />
               {hasEntry && <View style={styles.dot} />}
             </TouchableOpacity>
           );
@@ -1152,6 +1248,7 @@ export default function App() {
     </SafeAreaView>
   );
 }
+// styles for the components
 
 const styles = StyleSheet.create({
   headerRow: {
@@ -1363,5 +1460,62 @@ const styles = StyleSheet.create({
     borderRadius:16,
     padding: 24,
     width: width * 0.88,
+  },
+  calendarStrip: {
+    paddingVertical: 10,
+  },
+  calendarHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 12,
+    marginBottom: 8,
+  },
+  navButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  navIcon: {
+    fontSize: 22,
+  },
+  calendarMonthText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  scrollContainer: {
+    paddingHorizontal: 8,
+  },
+  dayWrapper: {
+    width: 40,
+    alignItems: 'center',
+    marginHorizontal: 4,
+  },
+  weekdayLabelText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    opacity: 0.92,
+  },
+  calendarDay: {
+    width: 40,
+    height: 70,
+    marginHorizontal: 4,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingVertical: 6,
+  },
+  selectedDay: {
+    backgroundColor: '#f6e58d',
+  },
+  dayText: {
+    fontSize: 15,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#a685e2',
+    marginTop: 4,
   },
 });
