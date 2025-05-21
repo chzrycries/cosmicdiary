@@ -429,7 +429,7 @@ function IntroScreen({ onContinue, theme }) {
         textShadowRadius: theme === "cosmic" ? 12 : 0,
         textShadowOffset: { width: 0, height: 3 },
       }}>
-        {theme === "cosmic" ? "🌌" : theme === "dark" ? "🌙" : "🌞"} Cosmic Diary
+        {theme === "cosmic" ? "✧˖°" : theme === "dark" ? "⏾" : "☀︎"} Cosmic Diary
       </Text>
       <Text style={{
         fontSize: 18,
@@ -439,14 +439,13 @@ function IntroScreen({ onContinue, theme }) {
         marginTop: 12,
         opacity: 0.92,
       }}>
-        Capture your thoughts, moods, and memories in a cosmic way!
+        A cosmic-themed diary app to track your moods, thoughts, and memories.
       </Text>
       <CosmicButton
-        title="Get Started"
+        title="ɢᴇᴛ ꜱᴛᴀʀᴛᴇᴅ"
         onPress={onContinue}
         theme={theme}
-        icon="🚀"
-        style={{ minWidth: 180, marginTop: 12 }}
+        style={{ minWidth: 150, marginTop: 12 }}
       />
     </View>
   );
@@ -627,17 +626,11 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-
   const days = getMonthDays(currentYear, currentMonth);
   const entryDates = new Set(entries.map(e => new Date(e.date).toDateString()));
-
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  // Refs to ScrollViews
   const weekdaysScrollViewRef = useRef(null);
   const datesScrollViewRef = useRef(null);
-
-  // Track which ScrollView is currently being scrolled by user to avoid feedback loops
   const scrollingRef = useRef(null);
 
   const goToPreviousMonth = () => {
@@ -657,10 +650,8 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
       setCurrentMonth(currentMonth + 1);
     }
   };
-
-  // Scroll handler for weekdays ScrollView
   const onWeekdaysScroll = (event) => {
-    if (scrollingRef.current === 'dates') return; // Ignore if dates ScrollView is scrolling
+    if (scrollingRef.current === 'dates') return;
 
     scrollingRef.current = 'weekdays';
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -669,10 +660,8 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
       datesScrollViewRef.current.scrollTo({ x: offsetX, animated: false });
     }
   };
-
-  // Scroll handler for dates ScrollView
   const onDatesScroll = (event) => {
-    if (scrollingRef.current === 'weekdays') return; // Ignore if weekdays ScrollView is scrolling
+    if (scrollingRef.current === 'weekdays') return;
 
     scrollingRef.current = 'dates';
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -681,8 +670,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
       weekdaysScrollViewRef.current.scrollTo({ x: offsetX, animated: false });
     }
   };
-
-  // Clear scrollingRef when user stops scrolling to allow next scroll event
   const onScrollEndDrag = () => {
     scrollingRef.current = null;
   };
@@ -693,7 +680,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
 
   return (
     <View style={[styles.calendarStrip, { backgroundColor: themeStyle.menuBg.backgroundColor }]}>
-      {/* Header with month navigation */}
       <View style={styles.calendarHeaderRow}>
         <TouchableOpacity onPress={goToPreviousMonth} style={styles.navButton}>
           <Text style={[styles.navIcon, { color: themeStyle.icon.color }]}>‹</Text>
@@ -708,7 +694,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
         </TouchableOpacity>
       </View>
 
-      {/* Scrollable weekday names */}
       <ScrollView
         ref={weekdaysScrollViewRef}
         horizontal
@@ -718,7 +703,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
         onScroll={onWeekdaysScroll}
         onScrollEndDrag={onScrollEndDrag}
         onMomentumScrollEnd={onMomentumScrollEnd}
-        // Disable scroll if dates ScrollView is scrolling to avoid conflict
         scrollEnabled={scrollingRef.current !== 'dates'}
       >
         {days.map((date, index) => {
@@ -736,7 +720,6 @@ function CalendarStrip({ selectedDate, setSelectedDate, themeStyle, entries }) {
         })}
       </ScrollView>
 
-      {/* Scrollable dates with moon phases */}
       <ScrollView
         ref={datesScrollViewRef}
         horizontal
@@ -1290,7 +1273,7 @@ export default function App() {
     </SafeAreaView>
   );
 }
-// styles for the components
+// --- STYLESHEET ---
 
 const styles = StyleSheet.create({
   headerRow: {
